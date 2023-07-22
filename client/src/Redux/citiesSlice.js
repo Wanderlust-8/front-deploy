@@ -1,9 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+const URL = 'https://deploy-back-fayx.vercel.app'
 
 // Thunk action para obtener cities del servidor
 export const fetchCities = createAsyncThunk("cities/fetchCities", async () => {
-  const response = await axios.get("http://localhost:3002/cities");
+  const response = await axios.get(`${URL}/cities`);
   return response.data;
 });
 
