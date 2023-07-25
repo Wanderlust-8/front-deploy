@@ -1,11 +1,13 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
+const URL = 'https://deploy-back-fayx.vercel.app'
+
 // Thunk action para obtener packages del servidor
 export const fetchPackages = createAsyncThunk(
   "packages/fetchPackages",
   async () => {
-    const response = await axios.get("http://localhost:3002/packages");
+    const response = await axios.get(`${URL}/packages`);
     return response.data;
   }
 );
@@ -14,7 +16,7 @@ export const addPackages = createAsyncThunk(
   "packages/addPackages",
   async (newPackage) => {
     const response = await axios.post(
-      "http://localhost:3002/packages",
+      `${URL}/packages`,
       newPackage
     );
     return response.data;
@@ -25,7 +27,7 @@ export const addPackages = createAsyncThunk(
 export const getPackageById = createAsyncThunk(
   "packages/getPackageById",
   async (id) => {
-    const response = await axios.get(`http://localhost:3002/packages/${id}`);
+    const response = await axios.get(`${URL}/packages/${id}`);
     return response.data;
   }
 );

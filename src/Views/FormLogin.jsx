@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
 import { FcGoogle } from "react-icons/fc";
-import { GrFacebook } from "react-icons/gr";
+import { GrGithub } from "react-icons/gr";
 import { AiFillEyeInvisible, AiFillEye } from "react-icons/ai";
 import logo from "../Utils/Img/logo.png";
 import sideImage from "../Utils/Img/side.png";
 import { fetchPackages } from "../Redux/Packages/packagesActions";
+import { loginUser } from "../Redux/Users/usersActions";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../Context/authContext";
+import { toast } from "react-toastify";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -13,31 +18,80 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [formFilled, setFormFilled] = useState(false);
+  const user = useSelector((state) => state.users.user);
+  const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const allPackages = useSelector((state) => state.packages.packagesList);
+  const {
+    login,
+    error,
+    currentUser,
+    signInWithGoogle,
+    signInWithFacebook,
+    signInWithGithub,
+    resetError,
+  } = useAuth();
 
   useEffect(() => {
-    const isFilled = email && password;
-    dispatch(fetchPackages());
-  }, [email, password, dispatch]);
+    if (error) {
+      setErrorMsg(error);
+      toast.error(error);
+    } else if (currentUser) {
+      toast.success(`Bienvenido ${currentUser.displayName}!`);
+      navigate("/home"); // redirige a la ruta /home
+    }
+    return () => {
+      setErrorMsg("");
+      resetError();
+    };
+  }, [error, currentUser, navigate, resetError]);
 
-  console.log(allPackages);
+  useEffect(() => {
+    setFormFilled(email && password); // si email y password tienen valor, formFilled es true
+  }, [email, password]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!isValidLogin()) {
-      setErrorMsg("Usuario o contraseña incorrectos");
+    //login email and password in firebase
+    if (!email || !password) {
+      setErrorMsg("Ingrese email y contraseña");
       return;
     }
-
-    setErrorMsg("");
-    console.log("Login correcto");
+    try {
+      await login(email, password);
+      dispatch(loginUser(user));
+    } catch (error) {
+      setErrorMsg(error.message);
+      console.log(error);
+    }
   };
 
-  const isValidLogin = () => {
-    return email === "admin" && password === "admin";
+  const handleGoogle = async () => {
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      setErrorMsg(error.message);
+      console.log(error);
+    }
+  };
+
+  const handleGithub = async () => {
+    try {
+      await signInWithGithub();
+      console.log("github");
+    } catch (error) {
+      setErrorMsg(error.message);
+      console.log(error);
+    }
+  };
+
+  const handleFacebook = async () => {
+    try {
+      await signInWithFacebook();
+    } catch (error) {
+      setErrorMsg(error.message);
+      console.log(error);
+    }
   };
 
   return (
@@ -54,9 +108,11 @@ const LoginPage = () => {
           {/* Titulos */}
           <div className="flex justify-between mb-5">
             <h2 className="text-gray-700 text-lg font-bold ">Ingresar</h2>
-            <h2 className="text-blue-600 text-base font-normal tracking-wide hover:underline cursor-pointer">
-              Registrarse
-            </h2>
+            <Link to="/register">
+              <h2 className="text-blue-600 text-base font-normal tracking-wide hover:underline cursor-pointer">
+                Registrarse
+              </h2>
+            </Link>
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col space-y-5">
@@ -122,17 +178,23 @@ const LoginPage = () => {
               {/* Botones Redes Sociales */}
 
               <div className="flex flex-col space-y-5">
-                <button className="flex items-center justify-center px-4 py-2 rounded-md border border-gray-300 w-full h-12">
+                <button
+                  className="flex items-center justify-center px-4 py-2 rounded-md border border-gray-300 w-full h-12"
+                  onClick={handleGoogle}
+                >
                   <FcGoogle className="h-5 w-5 mr-2" />
                   <span className="text-gray-700 font-bold text-sm">
                     Google
                   </span>
                 </button>
 
-                <button className="flex items-center justify-center px-4 py-2 rounded-md border border-gray-300 w-full h-12">
-                  <GrFacebook className="h-5 w-5 mr-2" color="#1877F2" />
+                <button
+                  className="flex items-center justify-center px-4 py-2 rounded-md border border-gray-300 w-full h-12"
+                  onClick={handleGithub}
+                >
+                  <GrGithub className="h-5 w-5 mr-2" />
                   <span className="text-gray-700 font-bold text-sm">
-                    Facebook
+                    Github
                   </span>
                 </button>
               </div>

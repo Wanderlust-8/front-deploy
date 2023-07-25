@@ -1,11 +1,13 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
+const URL = 'https://deploy-back-fayx.vercel.app'
+
 // Thunk action para obtener comments del servidor
 export const fetchComments = createAsyncThunk(
   "comments/fetchComments",
   async () => {
-    const response = await axios.get("http://localhost:3002/comments");
+    const response = await axios.get(`${URL}/comments`);
     return response.data;
   }
 );
